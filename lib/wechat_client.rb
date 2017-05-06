@@ -12,9 +12,12 @@ module WechatClient
                     'AppleWebKit/537.36 (KHTML, like Gecko) ' \
                     'Chrome/54.0.2840.71 Safari/537.36'
   }
+  HEADERS_JSON = HEADERS.merge({
+    'ContentType' => 'application/json; charset=UTF-8'
+  })
 
   class Core
-    attr_accessor :logger, :uuid, :login_info
+    attr_accessor :logger, :uuid, :login_info, :user, :uin, :friends
 
     def initialize(options = {})
       self.logger = Logger.new(STDOUT)
@@ -26,7 +29,6 @@ module WechatClient
       status = nil
       get_qr(uuid)
       logger.info('QR downloaded.')
-
       while status != '200' do
         logger.info('Check login...')
         status = check_login()
@@ -39,14 +41,18 @@ module WechatClient
           break
         end
       end
-
       if status == '200'
-        body = web_init()
-        logger.info(body)
+        initial_body = web_init()
+        self.user = initial_body["User"]
+        self.uin = user["Uin"]
+        logger.info("Uin: #{uin}. Downloading contacts...")
+        contact_body = get_contact()
+        self.friends = get_friends(contact_body)
+        logger.info(friends)
       end
     end
 
-    # private
+    private
 
     def get_qr_uuid
       params = {'appid' => WEB_APPID, 'fun' => 'new'}
@@ -64,18 +70,7 @@ module WechatClient
 
     def get_qr(uuid)
       qrcode = RQRCode::QRCode.new("#{BASE}/l/#{uuid}")
-      image = qrcode.as_png(
-        resize_gte_to: false,
-        resize_exactly_to: false,
-        fill: 'white',
-        color: 'black',
-        size: 120,
-        border_modules: 4,
-        module_px_size: 6,
-        file: nil
-      )
-      filename = "qr-#{uuid}.png"
-      IO.write(filename, image.to_s)
+      IO.write("qrcode.svg", qrcode.as_svg.to_s)
     end
 
     def check_login(uuid = self.uuid)
@@ -116,23 +111,36 @@ module WechatClient
     end
 
     def web_init
-      pass_ticket = login_info['BaseRequest']['DeviceID']
-      skey = login_info['BaseRequest']['Skey']
-      url = "#{login_info['url']}/webwxinit?pass_ticket=#{pass_ticket}&skey=#{skey}&r=#{Time.now.to_i}"
-      content_type = 'application/json; charset=UTF-8'
-      headers = HEADERS.merge({'ContentType' => content_type})
-      logger.info url
-      logger.info headers
-      payload = {'BaseRequest' => login_info['BaseRequest']}.to_json
-      resp = RestClient.post(url, payload, headers: headers)
-      JSON.parse(resp.body)
+      post_json('/webwxinit')
+    end
+
+    def get_contact
+      post_json('/webwxgetcontact')
+    end
+
+    def post_json(path, payload = nil)
+      payload ||= {'BaseRequest' => login_info['BaseRequest']}.to_json
+      url = generate_post_url(path)
+      resp = RestClient.post(url, payload, headers: HEADERS_JSON)
+      JSON.parse(resp)
+    end
+
+    def generate_post_url(path)
+      "#{login_info['url']}#{path}?" \
+      "pass_ticket=#{login_info['BaseRequest']['DeviceID']}&" \
+      "skey=#{login_info['BaseRequest']['Skey']}&r=#{Time.now.to_i}"
+    end
+
+    def get_friends(resp_body_get_contact)
+      resp_body_get_contact["MemberList"].select do |contact|
+        contact['VerifyFlag'] == 0 && !contact['UserName'].start_with?("@@")
+      end
     end
 
     def request_without_redirect(url, opts = {})
       default = {method: :get, url: url, headers: HEADERS, max_redirects: 0}
       RestClient::Request.execute(default.merge(opts))
     rescue RestClient::ExceptionWithResponse => err
-      logger.info(err.inspect)
       err.response
     end
   end
