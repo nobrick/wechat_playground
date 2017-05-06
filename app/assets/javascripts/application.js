@@ -13,5 +13,7 @@
 //= require jquery
 //= require jquery_ujs
 //= require bootstrap
+//= require qrcode.min
 //= require message-bus
+//= require nprogress
 //= require app
