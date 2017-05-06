@@ -1,5 +1,4 @@
 require 'rest-client'
-require 'rqrcode'
 require 'nokogiri'
 require 'json'
 require 'logger'
@@ -52,7 +51,10 @@ module WechatClient
       end
     end
 
-    private
+    def get_qr_url(uuid = nil)
+      uuid ||= get_qr_uuid()
+      "#{BASE}/l/#{uuid}"
+    end
 
     def get_qr_uuid
       params = {'appid' => WEB_APPID, 'fun' => 'new'}
@@ -66,11 +68,6 @@ module WechatClient
         else
           nil
         end
-    end
-
-    def get_qr(uuid)
-      qrcode = RQRCode::QRCode.new("#{BASE}/l/#{uuid}")
-      IO.write("qrcode.svg", qrcode.as_svg.to_s)
     end
 
     def check_login(uuid = self.uuid)
@@ -145,5 +142,3 @@ module WechatClient
     end
   end
 end
-
-WechatClient::Core.new.login()
