@@ -2,12 +2,25 @@
   init: ->
     MessageBus.start()
     MessageBus.callbackInterval = 500
-    MessageBus.subscribe "/channel", (url) ->
+    MessageBus.subscribe "/channel", (payload) ->
       setTimeout(() ->
-        WechatQRCode.set(url)
-        NProgress.done()
-        $("#qr_tip").text("Please scan QR code in your WeChat, then touch CONFIRM.")
+        WechatLogin.onReply(JSON.parse(payload))
       , 0)
+
+@WechatLogin =
+  onReply: (payload) ->
+    switch payload.status
+      when 'get_qr'
+        WechatQRCode.set(payload.url)
+        NProgress.done()
+        $("#qr_tip").text("Please scan QR code in your WeChat.")
+      when 'wait_for_confirm'
+        $("#qr_tip").text("Please touch the Log In button.")
+      when 'login_success'
+        $("#qr_tip").text("Signed in.")
+        $("#qrcode").fadeOut()
+      else
+        console.log(payload)
 
 @WechatQRCode =
   init: () ->
