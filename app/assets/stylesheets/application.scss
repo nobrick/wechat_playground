@@ -1,0 +1,16 @@
+@import 'font-awesome';
+@import 'bootstrap';
+@import 'bourbon';
+
+/* Elements style */
+@mixin normal-fontfamily {
+  font-family: "PingHei", "STHeitiSC-Light", Helvetica, Tahoma, Arial, STXihei, "华文细黑", "Microsoft YaHei", "微软雅黑", SimSun, "宋体", Heiti, "黑体", sans-serif;
+}
+
+body {
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "liga", "kern";
+  text-rendering: optimizelegibility;
+  color: #555555;
+}
+
