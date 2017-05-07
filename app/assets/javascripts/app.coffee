@@ -1,7 +1,7 @@
 @MessageBusPolling =
   init: ->
     MessageBus.start()
-    MessageBus.callbackInterval = 500
+    MessageBus.callbackInterval = 100
     MessageBus.subscribe "/channel", (payload) ->
       setTimeout(() ->
         WechatLogin.onReply(JSON.parse(payload))
@@ -19,16 +19,19 @@
       when 'login_success'
         $("#qr_tip").text("Signed in. Fetching info...")
         $("#qrcode").fadeOut()
-        NProgress.configure(maximum: 0.3)
         NProgress.start()
       when 'web_init'
         nickname = payload.user["NickName"]
-        $("#qr_tip").text("Hi #{nickname}. Fetching friends...")
-        NProgress.configure(maximum: 1)
-        NProgress.set(0.6)
-      when 'fetch_friends'
-        $("#qr_tip").text(JSON.stringify(payload))
         NProgress.done()
+        $.ajax
+          type: 'POST'
+          url: '/session'
+          data: {uin: payload.uin, secret: payload.secret}
+        .done (data) ->
+          console.log(data)
+          if data.status == 200
+            $("#qr_tip").text("Hi #{nickname}. Redirecting...")
+            window.location.replace('/session')
       else
         console.log(payload)
 
@@ -51,6 +54,13 @@ ready = ->
   NProgress.start()
   MessageBusPolling.init()
   WechatQRCode.init()
+  $.ajax
+    type: 'GET'
+    url: '/wechat_login/new'
+  .done (payload) ->
+    WechatQRCode.set(payload.url)
+    $("#qr_tip").text("Please scan QR code in your WeChat.")
+    NProgress.done()
 
 $(document).ready(ready)
 $(document).on('page:load', ready)

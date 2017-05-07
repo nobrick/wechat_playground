@@ -1,11 +1,15 @@
+require 'wechat_client'
+
 class WechatFriendsFetchWorker
   include Sidekiq::Worker
+  include MessageBusHelper
   sidekiq_options retry: 0, dead: false
+  attr_accessor :message_bus_token
 
-  def perform(login_info)
+  def perform(message_bus_token, login_info)
+    self.message_bus_token = message_bus_token
     client.get_contact(login_info: login_info)
-    payload = {status: 'fetch_friends', friends: client.friends}.to_json
-    MessageBus.publish("/channel", payload)
+    publish('fetch_friends', friends: client.friends)
   end
   
   private

@@ -1,9 +1,6 @@
 Rails.application.routes.draw do
-  get 'sessions/new'
-
-  get 'sessions/show'
-
-  get 'sessions/delete'
+  resource :wechat_login, only: [:new]
+  resource :session, only: [:new, :show, :create, :destroy]
 
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
