@@ -29,7 +29,7 @@ module Login
     session[:uin] = nil
   end
 
-  def set_uid_secret_for(uin, expiry = 180)
+  def set_uin_secret_for(uin, expiry = 180)
     SecureRandom.uuid().tap do |secret|
       redis.setex(redis_key_uin_secret(uin), expiry, secret)
     end
@@ -38,7 +38,7 @@ module Login
   private
 
   def redis_key_uin_secret(uin)
-    "wechat_playground/uid_secret/#{uin}"
+    "wechat_playground/uin_secret/#{uin}"
   end
 
   def redis

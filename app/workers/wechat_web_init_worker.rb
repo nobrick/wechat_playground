@@ -11,7 +11,7 @@ class WechatWebInitWorker
     self.message_bus_token = message_bus_token
     client.web_init(login_info: login_info)
     WechatFriendsFetchWorker.perform_async(message_bus_token, login_info)
-    secret = set_uid_secret_for(client.uin)
+    secret = set_uin_secret_for(client.uin)
     publish('web_init', uin: client.uin, user: client.user, secret: secret)
   end
   
