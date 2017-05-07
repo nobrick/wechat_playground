@@ -1,3 +1,6 @@
+Sels =
+  sessionNew: '.session-new-page'
+
 @MessageBusPolling =
   init: ->
     MessageBus.start()
@@ -8,12 +11,16 @@
       , 0)
 
 @WechatLogin =
+  downloadQR: ->
+    $.ajax
+      type: 'GET'
+      url: '/wechat_login/new'
+    .done (payload) ->
+      WechatQRCode.set(payload.url)
+      $("#qr_tip").text("Please scan QR code in your WeChat.")
+      NProgress.done()
   onReply: (payload) ->
     switch payload.status
-      when 'get_qr'
-        WechatQRCode.set(payload.url)
-        $("#qr_tip").text("Please scan QR code in your WeChat.")
-        NProgress.done()
       when 'wait_for_confirm'
         $("#qr_tip").html("Please touch the <b>Log In</b> button in WeChat.")
       when 'login_success'
@@ -51,16 +58,11 @@
 
 
 ready = ->
+  return unless $(Sels.sessionNew).length
   NProgress.start()
   MessageBusPolling.init()
   WechatQRCode.init()
-  $.ajax
-    type: 'GET'
-    url: '/wechat_login/new'
-  .done (payload) ->
-    WechatQRCode.set(payload.url)
-    $("#qr_tip").text("Please scan QR code in your WeChat.")
-    NProgress.done()
+  WechatLogin.downloadQR()
 
 $(document).ready(ready)
 $(document).on('page:load', ready)
