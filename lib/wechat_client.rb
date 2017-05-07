@@ -1,7 +1,5 @@
 require 'rest-client'
 require 'nokogiri'
-require 'json'
-require 'logger'
 
 module WechatClient
   BASE = 'https://login.weixin.qq.com'
@@ -16,39 +14,10 @@ module WechatClient
   })
 
   class Core
-    attr_accessor :logger, :uuid, :login_info, :user, :uin, :friends
+    attr_accessor :uuid, :login_info, :user, :uin, :friends
 
     def initialize(options = {})
-      self.logger = Logger.new(STDOUT)
       self.login_info = {}
-    end
-
-    def login
-      uuid = get_qr_uuid()
-      status = nil
-      get_qr(uuid)
-      logger.info('QR downloaded.')
-      while status != '200' do
-        logger.info('Check login...')
-        status = check_login()
-        if status == '200'
-          logger.info('Logged in.')
-        elsif status == '201'
-          logger.info('Please confirm on your phone.')
-        elsif status != '408'
-          logger.info('Login timeout.')
-          break
-        end
-      end
-      if status == '200'
-        initial_body = web_init()
-        self.user = initial_body["User"]
-        self.uin = user["Uin"]
-        logger.info("Uin: #{uin}. Downloading contacts...")
-        contact_body = get_contact()
-        self.friends = get_friends(contact_body)
-        logger.info(friends)
-      end
     end
 
     def get_qr_url(uuid = nil)
@@ -107,28 +76,36 @@ module WechatClient
       }
     end
 
-    def web_init
-      post_json('/webwxinit')
+    def web_init(opts = {})
+      post_json('/webwxinit', opts).tap do |body|
+        self.user = body["User"]
+        self.uin = user["Uin"]
+      end
     end
 
-    def get_contact
-      post_json('/webwxgetcontact')
+    def get_contact(opts = {})
+      post_json('/webwxgetcontact', opts).tap do |body|
+        self.friends = filter_friends(body)
+      end
     end
 
-    def post_json(path, payload = nil)
-      payload ||= {'BaseRequest' => login_info['BaseRequest']}.to_json
-      url = generate_post_url(path)
+    private
+
+    def post_json(path, opts = {})
+      login_info = opts[:login_info] || self.login_info
+      payload = {'BaseRequest' => login_info['BaseRequest']}.to_json
+      url = generate_post_url(path, login_info)
       resp = RestClient.post(url, payload, headers: HEADERS_JSON)
-      JSON.parse(resp)
+      ActiveSupport::JSON.decode(resp.body)
     end
 
-    def generate_post_url(path)
+    def generate_post_url(path, login_info)
       "#{login_info['url']}#{path}?" \
       "pass_ticket=#{login_info['BaseRequest']['DeviceID']}&" \
       "skey=#{login_info['BaseRequest']['Skey']}&r=#{Time.now.to_i}"
     end
 
-    def get_friends(resp_body_get_contact)
+    def filter_friends(resp_body_get_contact)
       resp_body_get_contact["MemberList"].select do |contact|
         contact['VerifyFlag'] == 0 && !contact['UserName'].start_with?("@@")
       end

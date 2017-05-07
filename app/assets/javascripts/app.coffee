@@ -12,13 +12,23 @@
     switch payload.status
       when 'get_qr'
         WechatQRCode.set(payload.url)
-        NProgress.done()
         $("#qr_tip").text("Please scan QR code in your WeChat.")
+        NProgress.done()
       when 'wait_for_confirm'
-        $("#qr_tip").text("Please touch the Log In button.")
+        $("#qr_tip").html("Please touch the <b>Log In</b> button in WeChat.")
       when 'login_success'
-        $("#qr_tip").text("Signed in.")
+        $("#qr_tip").text("Signed in. Fetching info...")
         $("#qrcode").fadeOut()
+        NProgress.configure(maximum: 0.3)
+        NProgress.start()
+      when 'web_init'
+        nickname = payload.user["NickName"]
+        $("#qr_tip").text("Hi #{nickname}. Fetching friends...")
+        NProgress.configure(maximum: 1)
+        NProgress.set(0.6)
+      when 'fetch_friends'
+        $("#qr_tip").text(JSON.stringify(payload))
+        NProgress.done()
       else
         console.log(payload)
 
@@ -28,7 +38,7 @@
       text: ""
       width: 256
       height: 256
-      colorDark : "#000000"
+      colorDark : "#778074"
       colorLight : "#ffffff"
       correctLevel : QRCode.CorrectLevel.H
     )

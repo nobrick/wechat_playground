@@ -16,11 +16,11 @@ class WechatLoginCheckWorker
   private
 
   def check_login(uuid, times)
-    client = WechatClient::Core.new()
     code = client.check_login(uuid)
     case code
     when '200'
       publish('login_success')
+      WechatWebInitWorker.perform_async(client.login_info)
     when '201'
       publish('wait_for_confirm')
       recheck(uuid, times - 1)
@@ -38,5 +38,9 @@ class WechatLoginCheckWorker
 
   def recheck(uuid, times)
     WechatLoginCheckWorker.perform_async(uuid, times)
+  end
+
+  def client
+    @client ||= WechatClient::Core.new()
   end
 end
