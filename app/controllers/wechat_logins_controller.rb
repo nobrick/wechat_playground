@@ -1,3 +1,5 @@
+require 'wechat_client'
+
 class WechatLoginsController < ApplicationController
   before_action :no_login_required, only: :download_qr
 
