@@ -31,13 +31,13 @@ Sels =
       when 'login_success'
         $("#qr_tip").text("Loading...")
         $("#qrcode").fadeOut()
-        NProgressHelper.set_value_and_max(0, 0.3)
+        NProgressHelper.set_value_and_max(0, 0.1)
         NProgress.start()
       when 'web_init'
         nickname = 
         $("#qr_tip").text("Authenticating...")
         WechatLogin.sendAuth(payload)
-        NProgressHelper.set_value_and_max(0.5, 0.6)
+        NProgressHelper.set_value_and_max(0.1, 0.2)
       when 'fetch_friends'
         NProgress.done()
         window.location.replace('/session')
@@ -51,8 +51,8 @@ Sels =
     .done (data) ->
       if data.status == 200
         nickname = payload.user["NickName"]
-        $("#qr_tip").text("Hi #{nickname}. Fetching friends...")
-        NProgressHelper.set_value_and_max(0.7, 1)
+        $("#qr_tip").text("Hi #{nickname}. Fetching friends, this could take a few minutes...")
+        NProgressHelper.set_value_and_max(0.2, 1)
 
 @WechatQRCode =
   init: () ->
