@@ -4,10 +4,10 @@ class WechatLoginCheckWorker
   include Sidekiq::Worker
   include MessageBusHelper
   sidekiq_options retry: 0, dead: false
-  attr_accessor :message_bus_token
+  attr_reader :message_bus_token
 
   def perform(message_bus_token, uuid, times = 20)
-    self.message_bus_token = message_bus_token
+    set_message_bus_token(message_bus_token)
     if times <= 0
       publish('request_too_much')
       return
@@ -22,7 +22,13 @@ class WechatLoginCheckWorker
     case code
     when '200'
       publish('login_success')
-      WechatWebInitWorker.perform_async(message_bus_token, client.login_info)
+      payload = {
+        message_bus_token: message_bus_token,
+        login_info: client.login_info,
+        cookies: client.cookies
+      }
+      logger.info(payload)
+      WechatWebInitWorker.perform_async(payload)
     when '201'
       publish('wait_for_confirm')
       recheck(uuid, times - 1)
@@ -40,5 +46,9 @@ class WechatLoginCheckWorker
 
   def client
     @client ||= WechatClient::Core.new()
+  end
+
+  def set_message_bus_token(message_bus_token)
+    @message_bus_token = message_bus_token
   end
 end
