@@ -10,6 +10,11 @@ Sels =
         WechatLogin.onReply(JSON.parse(payload))
       , 0)
 
+@NProgressHelper =
+  set_value_and_max: (value, max) ->
+    NProgress.configure(maximum: max)
+    NProgress.set(value)
+
 @WechatLogin =
   downloadQR: ->
     $.ajax
@@ -24,23 +29,30 @@ Sels =
       when 'wait_for_confirm'
         $("#qr_tip").html("Please touch the <b>Log In</b> button in WeChat.")
       when 'login_success'
-        $("#qr_tip").text("Signed in. Fetching info...")
+        $("#qr_tip").text("Loading...")
         $("#qrcode").fadeOut()
+        NProgressHelper.set_value_and_max(0, 0.3)
         NProgress.start()
       when 'web_init'
-        nickname = payload.user["NickName"]
+        nickname = 
+        $("#qr_tip").text("Authenticating...")
+        WechatLogin.sendAuth(payload)
+        NProgressHelper.set_value_and_max(0.5, 0.6)
+      when 'fetch_friends'
         NProgress.done()
-        $.ajax
-          type: 'POST'
-          url: '/session'
-          data: {uin: payload.uin, secret: payload.secret}
-        .done (data) ->
-          console.log(data)
-          if data.status == 200
-            $("#qr_tip").text("Hi #{nickname}. Redirecting...")
-            window.location.replace('/session')
+        window.location.replace('/session')
       else
         console.log(payload)
+  sendAuth: (payload) ->
+    $.ajax
+      type: 'POST'
+      url: '/session'
+      data: {uin: payload.uin, secret: payload.secret}
+    .done (data) ->
+      if data.status == 200
+        nickname = payload.user["NickName"]
+        $("#qr_tip").text("Hi #{nickname}. Fetching friends...")
+        NProgressHelper.set_value_and_max(0.7, 1)
 
 @WechatQRCode =
   init: () ->

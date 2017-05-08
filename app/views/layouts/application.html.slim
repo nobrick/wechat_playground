@@ -8,5 +8,15 @@ html
     = javascript_include_tag 'application'
     = csrf_meta_tags
   body
+    nav.navbar.navbar-default
+      .container-fluid
+        = link_to 'WechatPlayground', '#', class: 'navbar-brand'
+        - if login?
+          p.navbar-text
+            i.fa.fa-check
+          = link_to 'Home', session_path, type: 'button',
+                     class: 'btn btn-default navbar-btn'
+          = link_to 'Sign out', session_path, method: :delete, type: 'button',
+                     class: 'btn btn-default navbar-btn pull-right'
     .container
       = yield

@@ -2,12 +2,11 @@
 #
 # Explicitly set +message_bus_token+ before including this module.
 module MessageBusHelper
-
   extend ActiveSupport::Concern
 
   def publish(status, params = {})
     payload = {status: status}.merge(params).to_json
-    logger.info("[Token]  #{message_bus_token}\n[Payload]  #{payload}")
+    logger.info("[Token]  #{message_bus_token}\n[Payload]  #{payload[0..200]}")
     MessageBus.publish("/channel", payload, user_ids: [message_bus_token])
   end
 end

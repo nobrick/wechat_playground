@@ -89,6 +89,10 @@ module WechatClient
       end
     end
 
+    def uin_from_login_info(info)
+      info['BaseRequest']['Uin']
+    end
+
     private
 
     def post_json(path, opts = {})

@@ -1,3 +1,7 @@
-h1 Sessions#show
-p Find me in app/views/sessions/show.html.slim
-= link_to 'Sign out', session_url, method: :delete
+h3 Options
+p
+  = link_to 'Sync new contacts', new_contact_sync_path, class: 'btn btn-default'
+p
+  = link_to 'Friends', '#', class: 'btn btn-default'
+p
+  = link_to 'Sign out', session_path, method: :delete, class: 'btn btn-default'
