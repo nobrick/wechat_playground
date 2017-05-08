@@ -1,6 +1,3 @@
-require 'rest-client'
-require 'nokogiri'
-
 module WechatClient
   BASE = 'https://login.weixin.qq.com'
   WEB_APPID = 'wx782c26e4c19acffb'
@@ -14,7 +11,7 @@ module WechatClient
   })
 
   class Core
-    attr_accessor :uuid, :login_info, :user, :uin, :friends
+    attr_accessor :uuid, :login_info, :user, :uin, :friends, :cookies
 
     def initialize(options = {})
       self.login_info = {}
@@ -67,6 +64,7 @@ module WechatClient
       login_info['deviceid'] = "e#{rand().to_s[2...17]}"
 
       resp = request_without_redirect(url)
+      self.cookies = resp.cookies
       doc = Nokogiri::XML(resp)
       login_info['BaseRequest'] = {
         'Skey'     => doc.at_xpath("//skey").child.to_s,
@@ -87,6 +85,17 @@ module WechatClient
       post_json('/webwxgetcontact', opts).tap do |body|
         self.friends = filter_friends(body)
       end
+    end
+
+    def get_avatar(contact_info, opts = {})
+      avatar_path = contact_info['HeadImgUrl']
+      login_info = opts[:login_info] || self.login_info
+      cookies = opts[:cookies] || self.cookies
+      url = login_info['url'] + avatar_path[avatar_path.rindex('/')..-1]
+      params = {'type' => 'big'} if opts[:size] == :big
+      http_opts = {params: params, headers: HEADERS, cookies: cookies}
+      resp = RestClient.get(url, http_opts)
+      resp.body
     end
 
     def uin_from_login_info(info)
