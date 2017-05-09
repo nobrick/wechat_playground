@@ -1,6 +1,16 @@
 .contact_syncs-new-page
-  h1 Sync Contacts
-  p
-    Count = @count
-  p
-    = @text
+  h4 Sync Contacts
+  ul.list-group
+    - @friend_hits.each do |hit|
+      li.list-group-item
+        .row
+          .col-xs-1
+            = avatar_tag(hit)
+          .col-xs-3
+            h4.list-group-item-heading
+              = hit.name_with_fallback
+            p.list-group-item-text
+              = hit.location
+          .col-xs-4
+            p.list-group-item-text
+              = hit.desc

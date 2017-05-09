@@ -9,6 +9,7 @@ class WechatFriendsFetchWorker
   def perform(payload)
     set_payload(payload)
     client.get_contact(params)
+    client.friends = client.friends.first(20) if test_mode?
     save_avatars()
     index_friends()
     publish('fetch_friends', friends: client.friends)
@@ -29,8 +30,7 @@ class WechatFriendsFetchWorker
       avatar_path = Rails.root.join(relative_path).to_s
       data = download_avatar(avatar_path, contact)
       contact['avatar_phash'] = get_avatar_phash(avatar_path).to_s
-      contact['avatar_path'] = relative_path
-      logger.info contact
+      contact['avatar_path'] = relative_path[relative_path.index("/")..-1]
       contact
     end
   end
@@ -48,17 +48,17 @@ class WechatFriendsFetchWorker
   end
 
   def mkdir_for_avatars
-    path = Rails.root.join("public/avatars/#{uin}")
+    path = Rails.root.join("public/avatars/cache/#{uin}")
     FileUtils.rm(Dir.glob(path.join("*.jpg")))
     path.mkdir() rescue false
   end
 
   def generate_avatar_path
-    "public/avatars/#{uin}/#{SecureRandom.uuid}.jpg"
+    "public/avatars/cache/#{uin}/#{SecureRandom.uuid}.jpg"
   end
 
   def elastic_friend
-    @elastic_friend ||= Elastic::Friend.new()
+    @elastic_friend ||= Elastic::Friend::Client.new()
   end
 
   def client
@@ -71,5 +71,9 @@ class WechatFriendsFetchWorker
     @login_info        = payload.fetch(:login_info)
     @params            = payload.slice(:login_info, :cookies)
     @uin               = client.uin_from_login_info(login_info)
+  end
+
+  def test_mode?
+    ENV['WC_TEST'] == '1'
   end
 end

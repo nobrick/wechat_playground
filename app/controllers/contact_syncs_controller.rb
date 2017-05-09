@@ -1,12 +1,10 @@
 class ContactSyncsController < ApplicationController
   before_action :login_required
+  helper :friends
 
   # GET /contact_sync/new
   def new
-    uin = session[:uin]
-    result = elastic_friend.search_cache(uin)
-    @text = result["hits"]["hits"].map {|e| e["_source"]["NickName"]}
-    @count = @text.count
+    @friend_hits = friend_client.search_cache(session[:uin])
   end
 
   # POST /contact_sync
@@ -15,7 +13,7 @@ class ContactSyncsController < ApplicationController
 
   private
 
-  def elastic_friend
-    @elastic_friend ||= Elastic::Friend.new()
+  def friend_client
+    @friend_client ||= Elastic::Friend::Client.new()
   end
 end

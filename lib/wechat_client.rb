@@ -92,7 +92,8 @@ module WechatClient
       login_info = opts[:login_info] || self.login_info
       cookies = opts[:cookies] || self.cookies
       url = login_info['url'] + avatar_path[avatar_path.rindex('/')..-1]
-      params = {'type' => 'big'} if opts[:size] == :big
+      params = {}
+      params['type'] = 'big' if opts[:size] == :big
       http_opts = {params: params, headers: HEADERS, cookies: cookies}
       resp = RestClient.get(url, http_opts)
       resp.body
