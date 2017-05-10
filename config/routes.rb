@@ -1,8 +1,11 @@
 Rails.application.routes.draw do
   root 'contact_syncs#new'
+  resource :wechat_login, only: [:new]
   resource :session, only: [:new, :create, :destroy]
-  resource :contact_sync, only: [:new, :create]
-  # resources :friends
+  resource :contact_sync, only: [:new, :create] do
+    post 'import_all'
+  end
+  resources :friends
 
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
