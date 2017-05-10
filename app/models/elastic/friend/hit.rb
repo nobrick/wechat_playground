@@ -1,5 +1,6 @@
 module Elastic::Friend
   class Hit < Elastic::Model::Hit
+    attr_accessor :matches
     attr_reader :hit
 
     import_fields(

@@ -6,7 +6,7 @@ module Login
   end
 
   def no_login_required
-    redirect_to session_url if login?
+    redirect_to new_contact_sync_url if login?
   end
 
   def login?

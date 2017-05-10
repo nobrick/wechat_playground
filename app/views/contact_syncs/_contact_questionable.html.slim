@@ -1,0 +1,27 @@
+- contact = contact_questionable
+li.list-group-item.contact-questionable-list-item
+  .row
+    .col-xs-1
+      = avatar_tag(contact)
+    .col-xs-3
+      h4.list-group-item-heading
+        = contact.name_with_fallback
+      p.list-group-item-text
+        = contact.location
+    .col-xs-4
+      p.list-group-item-text
+        = contact.desc
+  ul.list-group.candidates-list
+    - contact.matches.each do |match|
+      li.list-group-item
+        .row
+          .col-xs-8
+            = link_to 'view', '#', class: 'btn btn-normal candidate-btn'
+            = link_to 'match', '#', class: 'btn btn-normal candidate-btn'
+          .col-xs-1
+            = avatar_tag(match)
+          .col-xs-3
+            h4.list-group-item-heading
+              = match.name_with_fallback
+            p.list-group-item-text
+              = match.location

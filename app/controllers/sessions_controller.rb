@@ -6,10 +6,6 @@ class SessionsController < ApplicationController
   def new
   end
 
-  # GET /session
-  def show
-  end
-
   # POST /session
   def create
     uin = params['uin']

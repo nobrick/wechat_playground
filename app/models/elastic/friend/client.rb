@@ -17,7 +17,7 @@ module Elastic::Friend
       process_result(client.search(query_params_for_cache(uin)))
     end
 
-    def match_confirmed(hit, term_importance = self.term_importance)
+    def match_confirmed(hit, term_importance = self.term_importance, opts = {})
       query =
         make_query(type: type_name_for_confirmed, size: 5) do
           {
@@ -33,7 +33,13 @@ module Elastic::Friend
             }
           }
         end
-      process_result(client.search(query))
+      matches = process_result(client.search(query))
+      if opts.fetch(:reject_low_scores, true) && matches.count >= 2
+        threshold = matches.first.score / 2
+        matches.select {|m| m.score >= threshold}
+      else
+        matches
+      end
     end
 
     ## Writers

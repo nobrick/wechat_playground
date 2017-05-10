@@ -1,6 +1,6 @@
 Rails.application.routes.draw do
-  resource :wechat_login, only: [:new]
-  resource :session, only: [:new, :create, :destroy, :show]
+  root 'contact_syncs#new'
+  resource :session, only: [:new, :create, :destroy]
   resource :contact_sync, only: [:new, :create]
   # resources :friends
 

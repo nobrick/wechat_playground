@@ -20,6 +20,7 @@ class WechatFriendsFetchWorker
   def index_friends(friends = client.friends)
     logger.info("Index friends...")
     elastic_friend.batch_index_cache(uin, friends)
+    elastic_friend.refresh()
   end
 
   def save_avatars(friends = client.friends)

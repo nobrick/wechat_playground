@@ -1,0 +1,12 @@
+li.list-group-item
+  .row
+    .col-xs-1
+      = avatar_tag(contact)
+    .col-xs-3
+      h4.list-group-item-heading
+        = contact.name_with_fallback
+      p.list-group-item-text
+        = contact.location
+    .col-xs-4
+      p.list-group-item-text
+        = contact.desc

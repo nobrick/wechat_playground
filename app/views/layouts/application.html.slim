@@ -8,15 +8,14 @@ html
     = javascript_include_tag 'application'
     = csrf_meta_tags
   body
-    nav.navbar.navbar-default
-      .container-fluid
-        = link_to 'WechatPlayground', '#', class: 'navbar-brand'
-        - if login?
+    - if login?
+        .container-fluid
           p.navbar-text
-            i.fa.fa-check
-          = link_to 'Home', session_path, type: 'button',
-                     class: 'btn btn-default navbar-btn'
+          = link_to '#' do
+            i.fa.fa-lg.fa-inverse.fa-umbrella.site-brand
+          = link_to 'Sync Friends', new_contact_sync_path, class: 'navlink'
+          = link_to 'My Friends', '#', class: 'navlink'
           = link_to 'Sign out', session_path, method: :delete, type: 'button',
-                     class: 'btn btn-default navbar-btn pull-right'
+                     class: 'pull-right navlink'
     .container
       = yield

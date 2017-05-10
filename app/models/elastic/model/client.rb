@@ -4,6 +4,10 @@ module Elastic::Model
       @client ||= Elasticsearch::Client.new(log: true)
     end
 
+    def refresh
+      client.indices.refresh(index: index_name)
+    end
+
     def make_query(opts = {})
       body =
         if block_given?

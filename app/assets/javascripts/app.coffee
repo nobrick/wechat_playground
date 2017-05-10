@@ -22,12 +22,12 @@ Sels =
       url: '/wechat_login/new'
     .done (payload) ->
       WechatQRCode.set(payload.url)
-      $("#qr_tip").text("Please scan QR code in your WeChat.")
+      $("#qr_tip").text("Scan in your mobile WeChat")
       NProgress.done()
   onReply: (payload) ->
     switch payload.status
       when 'wait_for_confirm'
-        $("#qr_tip").html("Please touch the <b>Log In</b> button in WeChat.")
+        $("#qr_tip").html("Touch <b>Log In</b> button to confirm")
       when 'login_success'
         $("#qr_tip").text("Loading...")
         $("#qrcode").fadeOut()
@@ -40,7 +40,7 @@ Sels =
         NProgressHelper.set_value_and_max(0.1, 0.2)
       when 'fetch_friends'
         NProgress.done()
-        window.location.replace('/session')
+        window.location.replace('/contact_sync/new')
       else
         console.log(payload)
   sendAuth: (payload) ->
@@ -51,7 +51,7 @@ Sels =
     .done (data) ->
       if data.status == 200
         nickname = payload.user["NickName"]
-        $("#qr_tip").text("Hi #{nickname}. Fetching friends, this could take a few minutes...")
+        $("#qr_tip").text("Hi #{nickname}. Fetching friends, wait a few minutes...")
         NProgressHelper.set_value_and_max(0.2, 1)
 
 @WechatQRCode =
