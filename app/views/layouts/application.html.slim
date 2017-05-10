@@ -14,7 +14,7 @@ html
           = link_to '#' do
             i.fa.fa-lg.fa-inverse.fa-umbrella.site-brand
           = link_to 'Sync Friends', new_contact_sync_path, class: 'navlink'
-          = link_to 'My Friends', '#', class: 'navlink'
+          = link_to 'My Friends', friends_path, class: 'navlink'
           = link_to 'Sign out', session_path, method: :delete, type: 'button',
                      class: 'pull-right navlink'
     .container

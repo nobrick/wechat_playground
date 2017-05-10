@@ -14,7 +14,11 @@ module Elastic::Friend
     end
 
     def search_cache(uin, opts = {})
-      process_result(client.search(query_params_for_cache(uin)))
+      process_result(search(query_params(uin, type_name_for_cache)))
+    end
+
+    def search_confirmed(uin, opts = {})
+      process_result(search(query_params(uin, type_name_for_confirmed)))
     end
 
     def match_confirmed(hit, term_importance = self.term_importance, opts = {})
@@ -33,13 +37,12 @@ module Elastic::Friend
             }
           }
         end
-      matches = process_result(client.search(query))
-      if opts.fetch(:reject_low_scores, true) && matches.count >= 2
-        threshold = matches.first.score / 2
-        matches.select {|m| m.score >= threshold}
-      else
-        matches
+      matches = process_result(search(query))
+      threshold = 16
+      if matches.count >= 2
+        threshold = [matches.first.score / 2, threshold].max
       end
+      matches.select {|m| m.score >= threshold}
     end
 
     ## Writers
@@ -53,7 +56,7 @@ module Elastic::Friend
 
     def clear_cache(uin)
       return unless index_exists?
-      client.delete_by_query(query_params_for_cache(uin))
+      client.delete_by_query(query_params(uin, type_name_for_cache))
     end
 
     def index_cache(uin, friend_body)
@@ -64,6 +67,15 @@ module Elastic::Friend
     def index_confirmed(uin, friend_body)
       friend_body.merge!(uin_belongs_to: uin, model: 'confirmed')
       index(type_name_for_confirmed, friend_body)
+    end
+
+    def confirm_cache_hit(cache_hit, match_id)
+      avatar_path =
+        Elastic::Friend::Client::Avatar
+          .cp_cache_avatar_to_confirmed(cache_hit, match_id)
+      source = cache_hit.source.merge({'avatar_path' => avatar_path})
+      update(match_id, type_name_for_confirmed, source)
+      delete(cache_hit.id, type_name_for_cache)
     end
 
     ## Helpers
@@ -85,10 +97,18 @@ module Elastic::Friend
       }
     end
 
+    def type_name_for_cache
+      'friend_cache'
+    end
+
+    def type_name_for_confirmed
+      'friend_confirmed'
+    end
+
     private
 
-    def query_params_for_cache(uin)
-      make_query(type: type_name_for_cache) do
+    def query_params(uin, type_name)
+      make_query(type: type_name) do
         {query: query_term(:uin_belongs_to, uin)}
       end
     end
@@ -99,18 +119,6 @@ module Elastic::Friend
 
     def query_term_on_hit_value(key, hit, boost = 1.0)
       query_term(key, hit.fetch(self.class.fields[key]), boost)
-    end
-
-    def index(type_name, body)
-      client.index(index: index_name, type: type_name, body: body)
-    end
-
-    def type_name_for_cache
-      'friend_cache'
-    end
-
-    def type_name_for_confirmed
-      'friend_confirmed'
     end
   end
 end

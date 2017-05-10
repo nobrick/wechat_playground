@@ -17,7 +17,9 @@ li.list-group-item.contact-questionable-list-item
         .row
           .col-xs-8
             = link_to 'view', '#', class: 'btn btn-normal candidate-btn'
-            = link_to 'match', '#', class: 'btn btn-normal candidate-btn'
+            = link_to 'match',
+                contact_sync_url(cache_id: contact.id, match_id: match.id),
+                method: :post, class: 'btn btn-normal candidate-btn'
           .col-xs-1
             = avatar_tag(match)
           .col-xs-3

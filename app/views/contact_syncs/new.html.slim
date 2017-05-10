@@ -19,8 +19,8 @@
         .tab-content
           div role="tabpanel" class="tab-pane active" id="unmatched_tab"
             - if @unmatched_count > 0
-              = link_to 'Import all', '#', class: 'btn btn-white',
-                                           id: 'import_all_unmatched'
+              = link_to 'Import all', import_unmatched_contact_sync_url,
+                method: :post, class: 'btn btn-white'
             ul.list-group.contact-list
               = render partial: 'contact',
                 collection: @unmatched_hits
@@ -29,6 +29,9 @@
               = render partial: 'contact_questionable',
                 collection: @questionable_hits
           div role="tabpanel" class="tab-pane" id="matched_tab"
+            - if @matched_count > 0
+              = link_to 'Acknowledge', acknowledge_matched_contact_sync_url,
+                method: :post, class: 'btn btn-white'
             ul.list-group.contact-list
               = render partial: 'contact',
                 collection: @matched_hits

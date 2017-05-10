@@ -9,6 +9,10 @@ module Login
     redirect_to new_contact_sync_url if login?
   end
 
+  def current_uin
+    session[:uin]
+  end
+
   def login?
     !!session[:uin]
   end

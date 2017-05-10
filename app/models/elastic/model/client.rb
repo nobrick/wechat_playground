@@ -1,12 +1,37 @@
 module Elastic::Model
   class Client
-    def client
-      @client ||= Elasticsearch::Client.new(log: true)
+
+    ## Readers
+
+    def get(id, type_name)
+      body = client.get(index: index_name, type: type_name, id: id)
+      Elastic::Friend::Hit.new(body)
     end
+
+    def search(params)
+      client.search(params)
+    end
+
+    ## Writers
 
     def refresh
       client.indices.refresh(index: index_name)
     end
+
+    def index(type_name, body)
+      client.index(index: index_name, type: type_name, body: body)
+    end
+
+    def update(id, type_name, body)
+      client.update(index: index_name, type: type_name, id: id,
+                    body: {doc: body})
+    end
+
+    def delete(id, type_name)
+      client.delete(index: index_name, type: type_name, id: id)
+    end
+
+    ## Helpers
 
     def make_query(opts = {})
       body =
@@ -16,6 +41,10 @@ module Elastic::Model
           {}
         end
       {index: index_name, size: default_size, body: body}.merge(opts)
+    end
+
+    def client
+      @client ||= Elasticsearch::Client.new(log: true)
     end
 
     def index_name

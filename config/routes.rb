@@ -3,7 +3,8 @@ Rails.application.routes.draw do
   resource :wechat_login, only: [:new]
   resource :session, only: [:new, :create, :destroy]
   resource :contact_sync, only: [:new, :create] do
-    post 'import_all'
+    post 'import_unmatched'
+    post 'acknowledge_matched'
   end
   resources :friends
 
