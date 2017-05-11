@@ -69,12 +69,17 @@ module Elastic::Friend
       index(type_name_for_confirmed, friend_body)
     end
 
-    def confirm_cache_hit(cache_hit, match_id)
+    def confirm_cache_hit(cache_hit, opts = {})
+      match_id = opts[:match_id]
       avatar_path =
         Elastic::Friend::Client::Avatar
-          .cp_cache_avatar_to_confirmed(cache_hit, match_id)
+          .cp_cache_avatar_to_confirmed(cache_hit, match_id || :random)
       source = cache_hit.source.merge({'avatar_path' => avatar_path})
-      update(match_id, type_name_for_confirmed, source)
+      if opts.fetch(:method) == :update
+        update(match_id, type_name_for_confirmed, source)
+      else
+        index_confirmed(cache_hit.uin_belongs_to, source)
+      end
       delete(cache_hit.id, type_name_for_cache)
     end
 
