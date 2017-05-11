@@ -35,6 +35,10 @@ module Elastic::Model
       client.delete(index: index_name, type: type_name, id: id)
     end
 
+    def delete_all
+      client.delete_by_query(index: index_name, body: {query: {match_all: {}}})
+    end
+
     def recreate_index(mappings)
       client.indices.delete(index: index_name) rescue false
       client.indices.create(index: index_name, body: {mappings: mappings})
@@ -57,7 +61,7 @@ module Elastic::Model
     end
 
     def index_name
-      @index_name ||= 'elastic_playground'
+      @index_name ||= "elastic_playground_#{Rails.env}"
     end
 
     def default_size
