@@ -12,6 +12,10 @@ module Elastic::Model
       client.search(params)
     end
 
+    def get_mapping(params = {})
+      client.indices.get_mapping({index: index_name}.merge(params))
+    end
+
     ## Writers
 
     def refresh
@@ -29,6 +33,11 @@ module Elastic::Model
 
     def delete(id, type_name)
       client.delete(index: index_name, type: type_name, id: id)
+    end
+
+    def recreate_index(mappings)
+      client.indices.delete(index: index_name) rescue false
+      client.indices.create(index: index_name, body: {mappings: mappings})
     end
 
     ## Helpers
