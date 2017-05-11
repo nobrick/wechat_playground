@@ -22,26 +22,26 @@ module Elastic::Friend
     end
 
     def match_confirmed(hit, term_importance = self.term_importance, opts = {})
+      conditions =
+        term_importance.map do |term_key, boost|
+          query_term_on_hit_value(term_key, hit, boost)
+        end
       query =
         make_query(type: type_name_for_confirmed, size: 5) do
           {
             query: {
               bool: {
-                filter:
-                  query_term_on_hit_value(:uin_belongs_to, hit),
-                should:
-                  term_importance.map do |term_key, boost|
-                    query_term_on_hit_value(term_key, hit, boost)
-                  end,
+                filter: query_term_on_hit_value(:uin_belongs_to, hit),
+                should: conditions.compact(),
                 minimum_should_match: 1
               }
             }
           }
         end
       matches = process_result(search(query))
-      threshold = 16
+      threshold = 17
       if matches.count >= 2
-        threshold = [matches.first.score / 2, threshold].max
+        threshold = [matches.first.score / 1.618, threshold].max
       end
       matches.select {|m| m.score >= threshold}
     end
@@ -92,12 +92,12 @@ module Elastic::Friend
 
     def term_importance
       @term_importance ||= {
-        avatar_phash: 16,
-        remark_name: 8,
-        nick_name: 4,
-        desc: 4,
-        province: 1.5,
-        city: 1.5,
+        avatar_phash: 32,
+        remark_name: 24,
+        nick_name: 16,
+        desc: 8,
+        province: 1,
+        city: 1,
         star_flag: 1,
         gender: 1
       }
@@ -120,11 +120,20 @@ module Elastic::Friend
     end
 
     def query_term(key, value, boost = 1.0)
-      {term: {self.class.fields[key] => {value: value, boost: boost}}}
+      {
+        constant_score: {
+          filter: {
+            term: {self.class.fields[key] => value}
+          },
+          boost: boost
+        }
+      }
     end
 
     def query_term_on_hit_value(key, hit, boost = 1.0)
-      query_term(key, hit.fetch(self.class.fields[key]), boost)
+      value = hit.fetch(self.class.fields[key])
+      return nil if value.blank?
+      query_term(key, value, boost)
     end
   end
 end
