@@ -32,7 +32,8 @@ module Elastic::Friend
                 should:
                   term_importance.map do |term_key, boost|
                     query_term_on_hit_value(term_key, hit, boost)
-                  end
+                  end,
+                minimum_should_match: 1
               }
             }
           }
