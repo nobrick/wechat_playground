@@ -72,10 +72,10 @@ module Elastic::Friend
 
     def confirm_cache_hit(cache_hit, opts = {})
       match_id = opts[:match_id]
-      avatar_path =
+      avatar_attrs =
         Elastic::Friend::Client::Avatar
           .cp_cache_avatar_to_confirmed(cache_hit, match_id || :random)
-      source = cache_hit.source.merge({'avatar_path' => avatar_path})
+      source = cache_hit.source.merge(avatar_attrs)
       if opts.fetch(:method) == :update
         update(match_id, type_name_for_confirmed, source)
       else
