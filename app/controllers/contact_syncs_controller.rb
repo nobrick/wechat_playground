@@ -29,9 +29,7 @@ class ContactSyncsController < ApplicationController
     if cache_hit.uin_belongs_to != current_uin()
       redirect_to root_url, status: 403
     else
-      friend_client.confirm_cache_hit(cache_hit,
-                                      method: :update,
-                                      match_id: match_id)
+      confirm_cache_hit(cache_hit, method: :update, match_id: match_id)
       friend_client.refresh()
       redirect_to friends_url
     end
@@ -56,8 +54,7 @@ class ContactSyncsController < ApplicationController
   def acknowledge_matched
     search_and_match_in_cache do |hit, matches|
       if matches.count == 1
-        id = matches.first.id
-        friend_client.confirm_cache_hit(hit, method: :update, match_id: id)
+        confirm_cache_hit(hit, method: :update, match_id: matches.first.id)
       end
     end
     friend_client.refresh()
@@ -77,6 +74,10 @@ class ContactSyncsController < ApplicationController
     @unmatched_count    = @unmatched_hits.count
     @matched_count      = @matched_hits.count
     @questionable_count = @questionable_hits.count
+  end
+
+  def confirm_cache_hit(hit, args)
+    friend_client.confirm_cache_hit(hit, args)
   end
 
   def cache_type
