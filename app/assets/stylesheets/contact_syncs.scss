@@ -1,0 +1,22 @@
+.contact_syncs-new-page {
+  margin-top: 30px;
+  .contacts-container {
+    .tab-content {
+      ul.list-group.contact-list {
+        margin-top: 18px;
+        height: 77vh;
+        overflow: auto;
+      }
+      ul.list-group.candidates-list {
+        margin-top: 18px;
+        .candidate-btn {
+          margin-top: 4px;
+        }
+      }
+      li.list-group-item.contact-questionable-list-item {
+        margin: 20px auto;
+        padding-top: 18px;
+      }
+    }
+  }
+}

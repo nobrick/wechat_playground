@@ -3,10 +3,10 @@ li.list-group-item
     .col-xs-1
       = avatar_tag(contact)
     .col-xs-3
-      h4.list-group-item-heading
+      h4.list-group-item-heading.name-text
         = contact.name_with_fallback
-      p.list-group-item-text
+      p.list-group-item-text.location-text
         = contact.location
     .col-xs-4
-      p.list-group-item-text
+      p.list-group-item-text.desc-text
         = contact.desc
