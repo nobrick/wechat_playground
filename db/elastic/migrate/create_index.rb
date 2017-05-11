@@ -49,7 +49,8 @@ class CreateIndex
         "avatar_path"      => {"type" => "keyword"},
         "avatar_phash"     => {"type" => "keyword"},
         "model"            => {"type" => "keyword"},
-        "uin_belongs_to"   => {"type" => "keyword"}
+        "uin_belongs_to"   => {"type" => "keyword"},
+        "py_fallback"      => {"type" => "keyword"}
       }
     }
   end

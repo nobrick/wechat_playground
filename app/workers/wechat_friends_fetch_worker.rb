@@ -10,6 +10,7 @@ class WechatFriendsFetchWorker
     set_payload(payload)
     client.get_contact(params)
     client.friends = client.friends.first(20) if test_mode?
+    set_py_fallback()
     save_avatars()
     index_friends()
     publish('fetch_friends', friends: client.friends)
@@ -21,6 +22,15 @@ class WechatFriendsFetchWorker
     logger.info("Index friends...")
     elastic_friend.batch_index_cache(uin, friends)
     elastic_friend.refresh()
+  end
+
+  def set_py_fallback(friends = client.friends)
+    friends.map! do |contact|
+      value = contact['RemarkPYQuanPin']
+      value = contact['PYQuanPin'] if value.blank?
+      contact['py_fallback'] = value
+      contact
+    end
   end
 
   def save_avatars(friends = client.friends)

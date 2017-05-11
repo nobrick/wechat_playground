@@ -115,7 +115,10 @@ module Elastic::Friend
 
     def query_params(uin, type_name)
       make_query(type: type_name) do
-        {query: query_term(:uin_belongs_to, uin)}
+        {
+          query: query_term(:uin_belongs_to, uin),
+          sort: ['py_fallback']
+        }
       end
     end
 
