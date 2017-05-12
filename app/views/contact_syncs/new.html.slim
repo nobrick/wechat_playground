@@ -1,11 +1,11 @@
 .contact_syncs-new-page
   .contacts-container
     .row
-      .col-md-2
+      .col-md-3
           ul class="nav nav-pills nav-stacked" role="tablist"
             li.active role="presentation"
               a href="#unmatched_tab" role="tab" data-toggle="tab"
-                span New contacts
+                span New
                 span.badge.hits-count-badge.pull-right = @unmatched_count
             li role="presentation"
               a href="#questionable_tab" role="tab" data-toggle="tab"
@@ -15,7 +15,7 @@
               a href="#matched_tab" role="tab" data-toggle="tab"
                 span Matched
                 span.badge.hits-count-badge.pull-right = @matched_count
-      .col-md-10
+      .col-md-9
         .tab-content
           div role="tabpanel" class="tab-pane active" id="unmatched_tab"
             - if @unmatched_count > 0
