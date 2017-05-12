@@ -22,7 +22,7 @@
               = link_to 'Import all', import_unmatched_contact_sync_url,
                 method: :post, class: 'btn btn-white'
             ul.list-group.contact-list
-              = render partial: 'contact',
+              = render partial: 'shared/contact',
                 collection: @unmatched_hits
           div role="tabpanel" class="tab-pane" id="questionable_tab"
             ul.list-group.contact-list
@@ -33,5 +33,5 @@
               = link_to 'Acknowledge', acknowledge_matched_contact_sync_url,
                 method: :post, class: 'btn btn-white'
             ul.list-group.contact-list
-              = render partial: 'contact',
+              = render partial: 'shared/contact',
                 collection: @matched_hits
