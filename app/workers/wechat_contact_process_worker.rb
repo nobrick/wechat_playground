@@ -4,7 +4,9 @@ class WechatContactProcessWorker
   include Sidekiq::Worker
   include MessageBusHelper
   include ContactProcessedCounter
-  sidekiq_options retry: 0, dead: false
+  sidekiq_options retry: 10, dead: false
+  sidekiq_retry_in {|_count| 1}
+
   attr_reader :message_bus_token, :login_info, :params, :uin
 
   def perform(payload, contact)

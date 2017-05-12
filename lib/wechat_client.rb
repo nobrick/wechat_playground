@@ -9,6 +9,7 @@ module WechatClient
   HEADERS_JSON = HEADERS.merge({
     'ContentType' => 'application/json; charset=UTF-8'
   })
+  AVATAR_FETCH_TIMEOUT = 7
 
   class Core
     attr_accessor :uuid, :login_info, :user, :uin, :friends, :cookies
@@ -94,8 +95,14 @@ module WechatClient
       url = login_info['url'] + avatar_path[avatar_path.rindex('/')..-1]
       params = {}
       params['type'] = 'big' if opts[:size] == :big
-      http_opts = {params: params, headers: HEADERS, cookies: cookies}
-      resp = RestClient.get(url, http_opts)
+      resp = RestClient::Request.execute(
+        method: :get,
+        url: url,
+        params: params,
+        headers: HEADERS,
+        cookies: cookies,
+        timeout: AVATAR_FETCH_TIMEOUT
+      )
       resp.body
     end
 
