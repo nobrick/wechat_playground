@@ -2,8 +2,9 @@ require 'wechat_client'
 
 class WechatContactProcessWorker
   include Sidekiq::Worker
-  include MessageBusHelper
+  include AvatarProcesser
   include ContactProcessedCounter
+  include MessageBusHelper
   sidekiq_options retry: 10, dead: false
   sidekiq_retry_in {|_count| 1}
 

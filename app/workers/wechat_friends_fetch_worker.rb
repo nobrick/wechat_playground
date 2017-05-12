@@ -2,8 +2,9 @@ require 'wechat_client'
 
 class WechatFriendsFetchWorker
   include Sidekiq::Worker
-  include MessageBusHelper
+  include AvatarProcesser
   include ContactProcessedCounter
+  include MessageBusHelper
   sidekiq_options retry: 0, dead: false
   attr_reader :message_bus_token, :login_info, :params, :uin
 

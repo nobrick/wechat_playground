@@ -1,4 +1,4 @@
-module MessageBusHelper
+module AvatarProcesser
   extend ActiveSupport::Concern
 
   def mkdir_for_avatars
