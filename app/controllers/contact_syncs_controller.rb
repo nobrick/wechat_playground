@@ -6,6 +6,7 @@ class ContactSyncsController < ApplicationController
   #
   # GET /contact_sync/new
   def new
+    friend_client.refresh() if params[:refresh] == 'true'
     @unmatched_hits    = []
     @matched_hits      = []
     @questionable_hits = []

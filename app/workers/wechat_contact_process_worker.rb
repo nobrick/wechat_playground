@@ -1,33 +1,44 @@
 require 'wechat_client'
 
-class WechatFriendsFetchWorker
+class WechatContactProcessWorker
   include Sidekiq::Worker
   include MessageBusHelper
   include ContactProcessedCounter
   sidekiq_options retry: 0, dead: false
   attr_reader :message_bus_token, :login_info, :params, :uin
 
-  def perform(payload)
+  def perform(payload, contact)
     set_payload(payload)
-    client.get_contact(params)
-    client.friends = client.friends.first(20) if test_mode?
-    mkdir_for_avatars()
-    elastic_friend.clear_cache(uin)
-    reset_processed_count(uin)
-    publish('fetch_friends', count: client.friends.count)
-    client.friends.each do |friend|
-      WechatContactProcessWorker.perform_async(payload, friend)
-    end
+    set_py_fallback!(contact)
+    save_avatar!(contact)
+    index_contact(contact)
+    publish_contact(contact)
   end
   
   private
 
-  def client
-    @client ||= WechatClient::Core.new()
+  def index_contact(contact)
+    elastic_friend.index_cache(uin, contact)
+  end
+
+  def publish_contact(contact)
+    name = contact['RemarkName']
+    name = contact['NickName'] if name.blank?
+    publish('process_contact', name: name, count: incr_processed_count(uin))
+  end
+
+  def set_py_fallback!(contact)
+    value = contact['RemarkPYQuanPin']
+    value = contact['PYQuanPin'] if value.blank?
+    contact['py_fallback'] = value
   end
 
   def elastic_friend
     @elastic_friend ||= Elastic::Friend::Client.new()
+  end
+
+  def client
+    @client ||= WechatClient::Core.new()
   end
 
   def set_payload(payload)
@@ -36,9 +47,5 @@ class WechatFriendsFetchWorker
     @login_info        = payload.fetch(:login_info)
     @params            = payload.slice(:login_info, :cookies)
     @uin               = client.uin_from_login_info(login_info)
-  end
-
-  def test_mode?
-    ENV['WC_TEST'] == '1'
   end
 end

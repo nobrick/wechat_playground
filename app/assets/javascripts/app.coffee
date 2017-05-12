@@ -4,7 +4,6 @@ Sels =
 @MessageBusPolling =
   init: ->
     MessageBus.start()
-    MessageBus.callbackInterval = 100
     MessageBus.subscribe "/channel", (payload) ->
       setTimeout(() ->
         WechatLogin.onReply(JSON.parse(payload))
@@ -29,20 +28,25 @@ Sels =
       when 'wait_for_confirm'
         $("#qr_tip").html("Touch <b>Log In</b> button to confirm")
       when 'login_success'
-        $("#qr_tip").text("Loading...")
+        $("#qr_tip").text("Loading profile...")
         $("#qrcode").fadeOut()
         NProgressHelper.set_value_and_max(0, 0.1)
         NProgress.start()
       when 'web_init'
         nickname = 
-        $("#qr_tip").text("Authenticating...")
+        $("#qr_tip").text("Fetching contacts...")
         WechatLogin.sendAuth(payload)
         NProgressHelper.set_value_and_max(0.1, 0.2)
       when 'fetch_friends'
-        NProgress.done()
-        window.location.replace('/contact_sync/new')
-      else
-        console.log(payload)
+        $("#qr_tip").text("Downloading...")
+        @friendsCount = payload.count
+        NProgressHelper.set_value_and_max(0.3, 1)
+      when 'process_contact'
+        msg = "#{payload.count} / #{@friendsCount} : #{payload.name}"
+        $("#qr_tip").text(msg)
+        if payload.count >= @friendsCount
+          NProgress.done()
+          window.location.replace('/contact_sync/new?refresh=true')
   sendAuth: (payload) ->
     $.ajax
       type: 'POST'
@@ -51,8 +55,8 @@ Sels =
     .done (data) ->
       if data.status == 200
         nickname = payload.user["NickName"]
-        $("#qr_tip").text("Hi #{nickname}. Fetching friends, wait a few minutes...")
-        NProgressHelper.set_value_and_max(0.2, 1)
+        $("#qr_tip").text("Hi #{nickname}. Fetching friends...")
+        NProgressHelper.set_value_and_max(0.2, 0.3)
 
 @WechatQRCode =
   init: () ->
